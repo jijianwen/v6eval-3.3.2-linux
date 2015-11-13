@@ -1058,7 +1058,7 @@ vRemote($;$@)
 		prOut("$_") if $VLog == 0;
 	}
 	close(PIN);
-	while($ChildPid == 0){};
+	while($ChildPid == 0){ checkChild(); };
 	my $status = getChildStatus();
 	prErrExit("Unknown child died $pid $ChildPid (status=$status)!!") if($ChildPid != $pid);
 	if($status & 0xff) { # died by signal
@@ -2380,7 +2380,7 @@ execCmd($;$)
 		}
     	}
 	close(PIN);
-	while($ChildPid == 0){};
+	while($ChildPid == 0){ checkChild(); };
 	my $status = getChildStatus();
 	prErrExit("Unknown child died $pid $ChildPid (status=$status)!!") if($ChildPid != $pid);
 	if( $status & 0xff ) {	# died by signal
@@ -2789,7 +2789,7 @@ BEGIN
 				# such as cpp/pkt{send,recv,ctl}
 	$InternalErr=64;        # exit code
 	# Set SIGCHLD handler to check pktbuf died while testing
-	$SIG{CHLD} = \&checkChild;
+	# $SIG{CHLD} = \&checkChild;
 	$SIG{TERM} = sub {exit;};	# This is the time to die !!
 					# explicit exit here to avoid 
 					# printing 'Terminated' message 
