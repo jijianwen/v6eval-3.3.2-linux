@@ -48,7 +48,7 @@ rOpen() || goto error;
 
 $rOpt_timeout=30 if !defined($rOpt_timeout);
 
-$cmd = "/bin/echo \'spdflush; flush;\' | setkey -c";
+$cmd = "ip xfrm state flush; ip xfrm policy flush"
 
 rLogin($rOpt_timeout) || goto error;
 rCommand($cmd , $rOpt_timeout) || goto error;

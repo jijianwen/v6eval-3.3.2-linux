@@ -89,7 +89,9 @@ if ($rOpt_protocol eq "ah-esp") {
 	$setkey_cmd .= add_esp_kame();
 }
 
-$cmd = "/bin/echo \'$setkey_cmd dump;\' | setkey -c";
+#$cmd = "/bin/echo \'$setkey_cmd dump;\' | setkey -c";
+$xfrm_cmd = $setkey_cmd;
+$cmd = "ip xfrm state $xfrm_cmd; ip xfrm state";
 
 rLogin($rOpt_timeout) || goto error;
 rCommand($cmd , $rOpt_timeout) || goto error;
@@ -112,7 +114,12 @@ notsupported:
 sub add_ah_kame() {
 	my ($cmd);
 
-	$cmd = "add $rOpt_src $rOpt_dst ah $rOpt_spi -m $rOpt_mode -A $rOpt_aalgo \"$rOpt_aalgokey\"; ";
+	$rOpt_aalgo =~ s/^hmac-//;
+	$rOpt_aalgo = "xcbc\\\(aes\\\)" if($rOpt_aalgo eq "aes-xcbc-mac");
+	$rOpt_aalgo = "sha256" if($rOpt_aalgo eq "sha-256");
+
+	#$cmd = "add $rOpt_src $rOpt_dst ah $rOpt_spi -m $rOpt_mode -A $rOpt_aalgo \"$rOpt_aalgokey\"; ";
+	$cmd = "add src $rOpt_src dst $rOpt_dst proto $rOpt_protocol spi $rOpt_spi mode $rOpt_mode auth $rOpt_aalgo \"$rOpt_aalgokey\"";
 
 	return $cmd;
 }
@@ -120,53 +127,72 @@ sub add_ah_kame() {
 sub add_esp_kame() {
 	my ($cmd);
 
-	$cmd = "add $rOpt_src $rOpt_dst esp $rOpt_spi -m $rOpt_mode";
+	#$cmd = "add $rOpt_src $rOpt_dst esp $rOpt_spi -m $rOpt_mode";
+	$cmd = "add src $rOpt_src dst $rOpt_dst proto esp spi $rOpt_spi mode $rOpt_mode";
 
-	if ($rOpt_padding eq "sequential") {
-		$cmd .= " -f seq-pad";
-	}
-	elsif ($rOpt_padding eq "zero") {
-		$cmd .= " -f zero-pad";
-	}
-	elsif ($rOpt_padding eq "random") {
-		$cmd .= " -f random-pad";
-	}
+	#if ($rOpt_padding eq "sequential") {
+	#	$cmd .= " -f seq-pad";
+	#}
+	#elsif ($rOpt_padding eq "zero") {
+	#	$cmd .= " -f zero-pad";
+	#}
+	#elsif ($rOpt_padding eq "random") {
+	#	$cmd .= " -f random-pad";
+	#}
 
-	if ($rOpt_nocyclicseq eq "yes") {
-		$cmd .= " -f nocyclic-seq";
-	}
+	#if ($rOpt_nocyclicseq eq "yes") {
+	#	$cmd .= " -f nocyclic-seq";
+	#}
 
 	if (defined($rOpt_rsize)) {
-		$cmd .= " -r $rOpt_rsize";
+		#$cmd .= " -r $rOpt_rsize";
+		$cmd .= " replay-window $rOpt_rsize";
 	}
 
 	if (defined($rOpt_htime)) {
-		$cmd .= " -lh $rOpt_htime";
+		#$cmd .= " -lh $rOpt_htime";
+		$cmd .= " limit time-use-hard $rOpt_stime";
 	}
 	if (defined($rOpt_stime)) {
-		$cmd .= " -ls $rOpt_stime";
+		#$cmd .= " -ls $rOpt_stime";
+		$cmd .= " limit time-use-soft $rOpt_stime";
 	}
 
 	if (defined($rOpt_unique)) {
-		$cmd .= " -u $rOpt_unique";
+		#$cmd .= " -u $rOpt_unique";
+		$cmd .=" reqid $rOpt_unique";
 	}
+
+	$rOpt_ealgo = "des3_ede" if($rOpt_ealgo eq "3des-cbc");
+	$rOpt_ealgo = "des" if($rOpt_ealgo eq "des-cbc");
+	$rOpt_ealgo = "aes" if($rOpt_ealgo eq "rijndael-cbc");
+	$rOpt_ealgo = "rfc3686\\\(ctr\\\(aes\\\)\\\)" if($rOpt_ealgo eq "aes-ctr");
+	$rOpt_ealgo = "cbc\\\(camellia\\\)" if($rOpt_ealgo eq "camellia-cbc");
 
 	if ($rOpt_ealgo eq "null") {
-		$cmd .= " -E simple";
+		#$cmd .= " -E simple";
+		$rOpt_ealgo = "cipher_null";
 	}
 	else {
-		$cmd .= " -E $rOpt_ealgo \"$rOpt_ealgokey\"";
+		#$cmd .= " -E $rOpt_ealgo \"$rOpt_ealgokey\"";
 	}
+	$cmd .= " enc $rOpt_ealgo \"$rOpt_ealgokey\"";
 
 	if ($rOpt_eauth ne undef) {
+		$rOpt_eauth =~ s/^hmac-//;
+		$rOpt_eauth = "xcbc\\\(aes\\\)" if($rOpt_eauth eq "aes-xcbc-mac");
+		$rOpt_eauth = "sha256" if($rOpt_eauth eq "sha-256");
+		$rOpt_eauth = "digest_null" if($rOpt_eauth eq "null");
+
 		if ($rOpt_eauthkey eq 1) {
-			$cmd .= " -A $rOpt_eauth";
+			#$cmd .= " -A $rOpt_eauth";
+			$cmd .= " auth $rOpt_eauth \"$rOpt_eauthkey\"";
 		} elsif ($rOpt_eauthkey ne undef) {
-			$cmd .= " -A $rOpt_eauth \"$rOpt_eauthkey\"";
+			$cmd .= " auth $rOpt_eauth \"$rOpt_eauthkey\"";
 		}
 	}
 
-	$cmd .= ";";
+	#$cmd .= ";";
 
 	return $cmd;
 }
