@@ -1,7 +1,7 @@
 Cm = ../../lib/Cm/
 Pz = ../../lib/Pz/
 pkt = ../../lib/pkt/
-CFLAGS += -pipe -g -fno-strict-aliasing
+CFLAGS += -pipe -g -fno-strict-aliasing -m32
 CPPFLAGS += -I${Cm} -I${Pz} -I${pkt}
 CXXFLAGS+= ${CFLAGS} -Woverloaded-virtual
 LDFLAGS += -L${Cm} -L${Pz} -L${pkt}

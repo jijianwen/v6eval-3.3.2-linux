@@ -6,7 +6,7 @@ OBJS =	CmTypes.o \
 	Timer.o CmDispatch.o CmReceiver.o timeval.o \
 	CmToken.o CmMatch.o CmLexer.o
 
-CFLAGS+=	-O0 -pipe -g -DYYDEBUG
+CFLAGS+=	-O0 -pipe -g -DYYDEBUG -m32
 CXXFLAGS+=	${CFLAGS}
 
 .PHONY: all

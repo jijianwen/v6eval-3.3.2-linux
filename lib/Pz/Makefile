@@ -13,7 +13,7 @@ OBJS =	DmObject.o ItPosition.o McAH.o McARP.o McAlgorithm.o	\
 	rijndael-alg-fst.o rijndael-api-fst.o camellia.o camellia-api.o
 
 Cm = ../Cm
-CFLAGS+=	-O0 -I$(Cm) -I. -pipe -g -DYYDEBUG
+CFLAGS+=	-O0 -I$(Cm) -I. -pipe -g -DYYDEBUG -m32
 CXXFLAGS+=	${CFLAGS}
 
 #CXXFLAGS=	-pipe -g -Wall -I./ -I$(Cm)

@@ -8,7 +8,7 @@ OBJS = PzParse.o LxToken.o LxLexer.o RAFControl.o \
 Cm = ../Cm
 Pz = ../Pz
 
-CFLAGS+=	-I. -I$(Cm) -I$(Pz) -DHAVE_BPF_HDRCMPLT -pipe -g
+CFLAGS+=	-I. -I$(Cm) -I$(Pz) -DHAVE_BPF_HDRCMPLT -pipe -g -m32
 CXXFLAGS+=	${CFLAGS}
 
 .PHONY: all
